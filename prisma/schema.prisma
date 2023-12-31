@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.sqlite"
+}
+
+model Session {
+  id          String    @id
+  shop        String
+  state       String
+  isOnline    Boolean   @default(false)
+  scope       String?
+  expires     DateTime?
+  accessToken String
+  userId      BigInt?
+}
+
+model Item {
+  id              Int         @id @default(autoincrement())
+  name            String      @unique
+  sku             String      @unique
+  shop            String
+  is_active       Boolean     @default(true)
+  date_created    DateTime    @default(now())
+  last_modified   DateTime    @updatedAt
+  locations       ItemLocation[]
+  kits            KitItems[]
+}
+
+model Location {
+  id              Int       @id @default(autoincrement())
+  name            String    @unique
+  is_active       Boolean   @default(true)
+  date_created    DateTime  @default(now())
+  last_modified   DateTime    @updatedAt
+  items           ItemLocation[]
+}
+
+model ItemLocation {
+  item            Item        @relation(fields: [itemId], references: [id])
+  itemId          Int
+  location        Location    @relation(fields: [locationId], references: [id])
+  locationId      Int
+  quantity        Int
+  date_created    DateTime  @default(now())
+  last_modified   DateTime    @updatedAt
+
+  @@id([itemId, locationId])         
+}
+
+model Kit {
+  id                 Int    @id @default(autoincrement())
+  shop               String
+  productId          String
+  productVariantId   String    
+  date_created       DateTime    @default(now())
+  items              KitItems[]              
+}
+
+model KitItems {
+  kit             Kit        @relation(fields: [kitId], references: [id])
+  kitId           Int
+  item            Item       @relation(fields: [itemId], references: [id])
+  itemId          Int
+  date_created    DateTime  @default(now())
+  last_modified   DateTime    @updatedAt
+
+  @@id([itemId, kitId]) 
+}
